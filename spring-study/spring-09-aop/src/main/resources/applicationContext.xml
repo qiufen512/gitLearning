@@ -1,0 +1,47 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <context:annotation-config/>
+    <!--注册bean-->
+    <bean id="userService" class="com.qiufen.service.UserServiceImpl"/>
+    <bean id="managerService" class="com.qiufen.service.ManagerServiceImpl"/>
+    <bean id="beforeLog" class="com.qiufen.log.BeforeLog"/>
+    <bean id="afterLog" class="com.qiufen.log.AfterLog"/>
+    <!--配置aop，首先导入aop的约束-->
+    <!---->
+    <aop:config>
+        <!--切入点:
+        expression:(execution(要执行的位置))[固定的表达式]
+        com.qiufen.service.UserServiceImpl.*(..))表示要切入到这个类下的所有方法，前面的*表示任意
+        -->
+        <!--        <aop:pointcut id="pointcut" expression="execution(* com.qiufen.service.UserServiceImpl.*(..))"/>-->
+        <aop:pointcut id="pointcut" expression="execution(* com.qiufen.service.*.*(..))"/>
+        <!--
+        执行环绕增加
+        advice-ref:引用哪个日志
+        pointcut-ref:引用在哪里
+        将beforeLog类切入到上面的表达式中
+        -->
+        <aop:advisor advice-ref="beforeLog" pointcut-ref="pointcut"/>
+        <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+    </aop:config>
+    <!--方式二：自定义类-->
+    <bean id="diy" class="com.qiufen.diy.DiyPointCut"/>
+    <aop:config>
+        <!--自定义切面-->
+        <aop:aspect ref="diy">
+            <!--切入点-->
+            <aop:pointcut id="point" expression="execution(* com.qiufen.service.*.*(..))"/>
+            <!--通知-->
+            <aop:before method="before" pointcut-ref="point"/>
+            <aop:after method="after" pointcut-ref="point"/>
+        </aop:aspect>
+    </aop:config>
+</beans>
